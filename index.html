@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMF Payroll Online</title>
+<style>
+:root{--p:#0f3460;--p2:#16213e;--a:#e94560;--bg:#f0f2f5;--c:#fff;--t:#1a1a2e;--m:#666;--b:#e0e0e0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
+.hdr{background:var(--p);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:100}
+.hdr h1{font-size:1.15rem}.hdr .sub{font-size:.75rem;opacity:.8}
+.nav{display:flex;gap:4px;flex-wrap:wrap}
+.nav button{background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:.82rem;font-weight:600}
+.nav button.active,.nav button:hover{background:#fff;color:var(--p)}
+.main{padding:12px;max-width:1400px;margin:0 auto}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center}
+.bar input,.bar select{padding:8px 12px;border:1px solid var(--b);border-radius:8px;font-size:.9rem}
+.bar input[type=search]{flex:1;min-width:160px}
+.btn{padding:8px 14px;border:none;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:600;transition:.15s}
+.btn-p{background:var(--p);color:#fff}.btn-p:hover{background:var(--p2)}
+.btn-a{background:var(--a);color:#fff}.btn-a:hover{opacity:.9}
+.btn-g{background:#27ae60;color:#fff}.btn-g:hover{opacity:.9}
+.btn-o{background:#f39c12;color:#fff}
+.btn-s{background:#ddd;color:#333}.btn-s:hover{background:#ccc}
+.btn-sm{padding:4px 8px;font-size:.75rem}
+.stats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.card{background:var(--c);border-radius:10px;padding:12px 16px;box-shadow:0 1px 3px rgba(0,0,0,.08);flex:1;min-width:120px;text-align:center}
+.card .l{font-size:.7rem;color:var(--m);text-transform:uppercase}.card .v{font-size:1.2rem;font-weight:700;color:var(--p)}
+.wrap{overflow:auto;background:var(--c);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08);max-height:calc(100vh - 220px)}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{background:var(--p);color:#fff;padding:8px 6px;text-align:left;position:sticky;top:0;white-space:nowrap;z-index:2;cursor:pointer}
+th:hover{background:var(--p2)}
+td{padding:6px;border-bottom:1px solid #eee;white-space:nowrap}
+tr:nth-child(even){background:#f8f9fb}tr:hover{background:#e8f0fe}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:12px}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border-radius:12px;padding:20px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,.2)}
+.modal h2{font-size:1.1rem;margin-bottom:14px;color:var(--p)}
+.fg{margin-bottom:10px}.fg label{display:block;font-size:.78rem;font-weight:600;color:var(--m);margin-bottom:3px}
+.fg input,.fg select{width:100%;padding:8px 10px;border:1px solid var(--b);border-radius:6px;font-size:.9rem}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--p);color:#fff;padding:12px 20px;border-radius:8px;font-size:.9rem;z-index:300;display:none;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.toast.show{display:block;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.day-cell{width:28px;text-align:center;cursor:pointer;border-radius:4px;font-weight:600}
+.day-cell:hover{outline:2px solid var(--p)}
+.d-0{color:#bbb}.d-1{background:#d4edda;color:#155724}.d--1{background:#f8d7da;color:#721c24}
+.d-P{background:#cce5ff;color:#004085}.d-L{background:#fff3cd;color:#856404}
+.att-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(36px,1fr));gap:4px;margin:8px 0}
+.att-grid .dh{font-size:.65rem;text-align:center;color:var(--m)}
+.panel{display:none}.panel.active{display:block}
+.empty{text-align:center;padding:40px;color:var(--m)}
+@media(max-width:600px){.fg-row{grid-template-columns:1fr}.hdr h1{font-size:1rem}.card .v{font-size:1rem}th,td{padding:5px 4px;font-size:.72rem}}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div><h1 id="coName">EMF Payroll</h1><div class="sub" id="coSub">Online Payroll System</div></div>
+  <div class="nav">
+    <button class="active" onclick="go('emp')">Employees</button>
+    <button onclick="go('att')">Attendance</button>
+    <button onclick="go('sal')">Salary</button>
+    <button onclick="go('adv')">Advance</button>
+    <button onclick="go('set')">Settings</button>
+  </div>
+</div>
+<div class="main">
+
+<!-- EMPLOYEES -->
+<div id="emp" class="panel active">
+  <div class="bar">
+    <input type="search" id="eQ" placeholder="Search name, ID, mobile..." oninput="renderEmp()">
+    <button class="btn btn-p" onclick="openEmpForm()">+ Add Worker</button>
+    <button class="btn btn-g" onclick="exportCSV('emp')">Export CSV</button>
+  </div>
+  <div class="stats" id="eStats"></div>
+  <div class="wrap"><table><thead><tr>
+    <th onclick="sortBy('emp','sno')">#</th><th onclick="sortBy('emp','id')">ID</th>
+    <th onclick="sortBy('emp','name')">Name</th><th onclick="sortBy('emp','dept')">Dept</th>
+    <th onclick="sortBy('emp','wageDay')">Wage/Day</th><th onclick="sortBy('emp','wageMonth')">Wage/Mo</th>
+    <th onclick="sortBy('emp','gender')">Gender</th><th onclick="sortBy('emp','doj')">DOJ</th>
+    <th onclick="sortBy('emp','mobile')">Mobile</th><th>Actions</th>
+  </tr></thead><tbody id="eBody"></tbody></table></div>
+</div>
+
+<!-- ATTENDANCE -->
+<div id="att" class="panel">
+  <div class="bar">
+    <input type="search" id="aQ" placeholder="Search worker..." oninput="renderAtt()">
+    <button class="btn btn-o" onclick="markAllPresent()">Mark All Present (Today)</button>
+  </div>
+  <div class="stats" id="aStats"></div>
+  <div class="wrap" id="aWrap"></div>
+</div>
+
+<!-- SALARY -->
+<div id="sal" class="panel">
+  <div class="bar">
+    <input type="search" id="sQ" placeholder="Search..." oninput="renderSal()">
+    <button class="btn btn-p" onclick="calcAllSalary()">Recalculate All</button>
+    <button class="btn btn-g" onclick="exportCSV('sal')">Export CSV</button>
+  </div>
+  <div class="stats" id="sStats"></div>
+  <div class="wrap"><table><thead><tr>
+    <th>#</th><th>Name</th><th>Gross</th><th>Worked</th><th>LOP</th><th>Paid</th>
+    <th>Basic</th><th>OT</th><th>Incentive</th><th>PF</th><th>ESI</th><th>Advance</th><th>Food</th><th>Net</th><th></th>
+  </tr></thead><tbody id="sBody"></tbody></table></div>
+</div>
+
+<!-- ADVANCE -->
+<div id="adv" class="panel">
+  <div class="bar">
+    <input type="search" id="vQ" placeholder="Search..." oninput="renderAdv()">
+    <button class="btn btn-p" onclick="openAdvForm()">+ Add Advance</button>
+  </div>
+  <div class="stats" id="vStats"></div>
+  <div class="wrap"><table><thead><tr>
+    <th>Code</th><th>Name</th><th>Advance</th><th>Fine</th><th>Total</th><th>Reimb</th><th>Balance</th><th>Opening</th><th></th>
+  </tr></thead><tbody id="vBody"></tbody></table></div>
+</div>
+
+<!-- SETTINGS -->
+<div id="set" class="panel">
+  <div class="card" style="text-align:left;max-width:500px;margin:0 auto">
+    <h2 style="margin-bottom:12px;color:var(--p)">Settings</h2>
+    <div class="fg"><label>Company Name</label><input id="setCo"></div>
+    <div class="fg"><label>Location</label><input id="setLoc"></div>
+    <div class="fg"><label>Month Label</label><input id="setMon"></div>
+    <div class="fg"><label>Days in Month</label><input id="setDays" type="number" min="28" max="31"></div>
+    <div class="modal-actions">
+      <button class="btn btn-p" onclick="saveSettings()">Save</button>
+      <button class="btn btn-g" onclick="exportJSON()">Backup Data (JSON)</button>
+      <button class="btn btn-o" onclick="document.getElementById('importFile').click()">Import JSON</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+    </div>
+    <p style="margin-top:16px;font-size:.8rem;color:var(--m)">Data is saved in your browser (localStorage). Use Backup/Import to move data between devices.</p>
+    <button class="btn btn-a" style="margin-top:12px" onclick="if(confirm('Reset to original Excel data? Current changes will be lost.'))resetData()">Reset to Excel Data</button>
+  </div>
+</div>
+</div>
+
+<!-- EMP MODAL -->
+<div class="modal-bg" id="empModal">
+  <div class="modal">
+    <h2 id="empModalTitle">Add Worker</h2>
+    <input type="hidden" id="empEditIdx">
+    <div class="fg-row">
+      <div class="fg"><label>Employee ID *</label><input id="fId"></div>
+      <div class="fg"><label>Dept / Code</label><input id="fDept"></div>
+    </div>
+    <div class="fg"><label>Name *</label><input id="fName"></div>
+    <div class="fg-row">
+      <div class="fg"><label>Wage / Day</label><input id="fWageDay" type="number" step="0.01"></div>
+      <div class="fg"><label>Wage / Month</label><input id="fWageMo" type="number" step="0.01"></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>Gender</label><select id="fGender"><option>Male</option><option>Female</option><option>Other</option></select></div>
+      <div class="fg"><label>DOJ</label><input id="fDoj" type="date"></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>Mobile</label><input id="fMobile"></div>
+      <div class="fg"><label>Father / Spouse</label><input id="fFather"></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>EPF (Y/N)</label><select id="fEpf"><option>Y</option><option>N</option></select></div>
+      <div class="fg"><label>UAN</label><input id="fUan"></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>ESI (Y/N)</label><select id="fEsi"><option>Y</option><option>N</option></select></div>
+      <div class="fg"><label>ESI No</label><input id="fEsiNo"></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>Bank</label><input id="fBank"></div>
+      <div class="fg"><label>A/c No</label><input id="fAcc"></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>IFSC</label><input id="fIfsc"></div>
+      <div class="fg"><label>Aadhaar</label><input id="fAadhaar"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-s" onclick="closeModal('empModal')">Cancel</button>
+      <button class="btn btn-p" onclick="saveEmp()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ATT DETAIL MODAL -->
+<div class="modal-bg" id="attModal">
+  <div class="modal">
+    <h2 id="attModalTitle">Attendance</h2>
+    <input type="hidden" id="attEmpId">
+    <p style="font-size:.85rem;color:var(--m);margin-bottom:8px">Click a day to cycle: Present → Absent → Leave → Half → Clear</p>
+    <div class="att-grid" id="attGrid"></div>
+    <div class="stats" style="margin-top:12px" id="attDetailStats"></div>
+    <div class="modal-actions">
+      <button class="btn btn-s" onclick="closeModal('attModal')">Close</button>
+      <button class="btn btn-p" onclick="saveAttDetail()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADV MODAL -->
+<div class="modal-bg" id="advModal">
+  <div class="modal">
+    <h2>Add / Edit Advance</h2>
+    <input type="hidden" id="advEditIdx">
+    <div class="fg"><label>Worker Name *</label>
+      <select id="fAdvName"></select>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>Advance</label><input id="fAdvAmt" type="number" step="0.01"></div>
+      <div class="fg"><label>Fine</label><input id="fAdvFine" type="number" step="0.01"></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>Reimbursement</label><input id="fAdvReimb" type="number" step="0.01"></div>
+      <div class="fg"><label>Opening Balance</label><input id="fAdvOpen" type="number" step="0.01"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-s" onclick="closeModal('advModal')">Cancel</button>
+      <button class="btn btn-p" onclick="saveAdv()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script>
+const SEED = window.SEED || {};
+const STORE_KEY = 'emf_payroll_v1';
+let DB = null;
+let sortState = {};
+
+function load() {
+  const raw = localStorage.getItem(STORE_KEY);
+  if (raw) {
+    try { DB = JSON.parse(raw); }
+    catch(e) { DB = JSON.parse(JSON.stringify(SEED)); }
+  } else {
+    DB = JSON.parse(JSON.stringify(SEED));
+  }
+  if (!DB.attendance) DB.attendance = {};
+  document.getElementById('coName').textContent = DB.company || 'EMF Payroll';
+  document.getElementById('coSub').textContent = (DB.location||'') + ' | ' + (DB.month||'');
+}
+
+function save() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(DB));
+  toast('Saved');
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function go(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+  if (id === 'emp') renderEmp();
+  if (id === 'att') renderAtt();
+  if (id === 'sal') renderSal();
+  if (id === 'adv') renderAdv();
+  if (id === 'set') loadSettings();
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function fmt(v) {
+  if (v === '' || v === null || v === undefined) return '';
+  if (typeof v === 'number') return v.toLocaleString('en-IN', {maximumFractionDigits: 2});
+  return v;
+}
+function num(v) { const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+
+function renderEmp() {
+  const q = (document.getElementById('eQ').value || '').toLowerCase();
+  let list = DB.employees.filter(e => e.active !== false);
+  if (q) list = list.filter(e => [e.name, e.id, e.dept, e.mobile, e.bank].join(' ').toLowerCase().includes(q));
+  document.getElementById('eBody').innerHTML = list.map((e, i) => {
+    const idx = DB.employees.indexOf(e);
+    return `<tr>
+      <td>${e.sno || i+1}</td><td>${e.id||''}</td><td><b>${e.name}</b></td><td>${e.dept||''}</td>
+      <td>${fmt(e.wageDay)}</td><td>${fmt(e.wageMonth)}</td><td>${e.gender||''}</td><td>${e.doj||''}</td>
+      <td>${e.mobile||''}</td>
+      <td>
+        <button class="btn btn-sm btn-p" onclick="openEmpForm(${idx})">Edit</button>
+        <button class="btn btn-sm btn-a" onclick="delEmp(${idx})">Del</button>
+        <button class="btn btn-sm btn-o" onclick="openAttDetail('${e.id}')">Att</button>
+      </td></tr>`;
+  }).join('') || '<tr><td colspan="10" class="empty">No workers found</td></tr>';
+  const males = list.filter(e => e.gender === 'Male').length;
+  document.getElementById('eStats').innerHTML = `
+    <div class="card"><div class="l">Workers</div><div class="v">${list.length}</div></div>
+    <div class="card"><div class="l">Male</div><div class="v">${males}</div></div>
+    <div class="card"><div class="l">Female</div><div class="v">${list.length - males}</div></div>`;
+}
+
+function openEmpForm(idx) {
+  document.getElementById('empEditIdx').value = idx !== undefined ? idx : '';
+  document.getElementById('empModalTitle').textContent = idx !== undefined ? 'Edit Worker' : 'Add Worker';
+  const e = idx !== undefined ? DB.employees[idx] : {};
+  document.getElementById('fId').value = e.id || '';
+  document.getElementById('fDept').value = e.dept || '';
+  document.getElementById('fName').value = e.name || '';
+  document.getElementById('fWageDay').value = e.wageDay || '';
+  document.getElementById('fWageMo').value = e.wageMonth || '';
+  document.getElementById('fGender').value = e.gender || 'Male';
+  document.getElementById('fDoj').value = e.doj || '';
+  document.getElementById('fMobile').value = e.mobile || '';
+  document.getElementById('fFather').value = e.father || '';
+  document.getElementById('fEpf').value = e.epf || 'Y';
+  document.getElementById('fUan').value = e.uan || '';
+  document.getElementById('fEsi').value = e.esi || 'Y';
+  document.getElementById('fEsiNo').value = e.esiNo || '';
+  document.getElementById('fBank').value = e.bank || '';
+  document.getElementById('fAcc').value = e.accNo || '';
+  document.getElementById('fIfsc').value = e.ifsc || '';
+  document.getElementById('fAadhaar').value = e.aadhaar || '';
+  document.getElementById('empModal').classList.add('show');
+}
+
+function saveEmp() {
+  const name = document.getElementById('fName').value.trim();
+  const id = document.getElementById('fId').value.trim();
+  if (!name || !id) { alert('Name and ID required'); return; }
+  const emp = {
+    id, sno: DB.employees.length + 1,
+    dept: document.getElementById('fDept').value.trim(),
+    name,
+    wageDay: num(document.getElementById('fWageDay').value),
+    wageMonth: num(document.getElementById('fWageMo').value),
+    gender: document.getElementById('fGender').value,
+    doj: document.getElementById('fDoj').value,
+    mobile: document.getElementById('fMobile').value.trim(),
+    father: document.getElementById('fFather').value.trim(),
+    epf: document.getElementById('fEpf').value,
+    uan: document.getElementById('fUan').value.trim(),
+    esi: document.getElementById('fEsi').value,
+    esiNo: document.getElementById('fEsiNo').value.trim(),
+    bank: document.getElementById('fBank').value.trim(),
+    accNo: document.getElementById('fAcc').value.trim(),
+    ifsc: document.getElementById('fIfsc').value.trim(),
+    aadhaar: document.getElementById('fAadhaar').value.trim(),
+    active: true
+  };
+  const idx = document.getElementById('empEditIdx').value;
+  if (idx !== '') {
+    emp.sno = DB.employees[idx].sno;
+    DB.employees[idx] = {...DB.employees[idx], ...emp};
+  } else {
+    DB.employees.push(emp);
+    if (!DB.attendance[id]) DB.attendance[id] = {name, code: emp.dept, days: {}, worked: 0, leave: 0, lop: 0};
+  }
+  save(); closeModal('empModal'); renderEmp();
+}
+
+function delEmp(idx) {
+  if (!confirm('Delete ' + DB.employees[idx].name + '?')) return;
+  DB.employees[idx].active = false;
+  save(); renderEmp();
+}
+
+const DAY_CYCLE = ['', '1', '-1', 'P', 'L', '0.5'];
+function cycleDay(v) {
+  const i = DAY_CYCLE.indexOf(String(v));
+  return DAY_CYCLE[(i + 1) % DAY_CYCLE.length];
+}
+function dayClass(v) {
+  if (v === 1 || v === '1') return 'd-1';
+  if (v === -1 || v === '-1') return 'd--1';
+  if (v === 'P') return 'd-P';
+  if (v === 'L') return 'd-L';
+  return 'd-0';
+}
+
+function renderAtt() {
+  const q = (document.getElementById('aQ').value || '').toLowerCase();
+  const md = DB.monthDays || 31;
+  let emps = DB.employees.filter(e => e.active !== false);
+  if (q) emps = emps.filter(e => e.name.toLowerCase().includes(q) || String(e.id).includes(q));
+
+  let html = `<table><thead><tr><th>Name</th><th>ID</th>`;
+  for (let d = 1; d <= md; d++) html += `<th>${d}</th>`;
+  html += `<th>Worked</th><th>Leave</th><th>LOP</th><th></th></tr></thead><tbody>`;
+
+  emps.forEach(e => {
+    const att = DB.attendance[e.id] || {days: {}, worked: 0, leave: 0, lop: 0};
+    const days = att.days || {};
+    html += `<tr><td><b>${e.name}</b></td><td>${e.id}</td>`;
+    for (let d = 1; d <= md; d++) {
+      const v = days[String(d)] !== undefined ? days[String(d)] : '';
+      html += `<td class="day-cell ${dayClass(v)}" onclick="toggleDay('${e.id}',${d})" title="Day ${d}">${v === '' ? '·' : v}</td>`;
+    }
+    html += `<td>${fmt(att.worked)}</td><td>${fmt(att.leave)}</td><td>${fmt(att.lop)}</td>
+      <td><button class="btn btn-sm btn-p" onclick="openAttDetail('${e.id}')">Edit</button></td></tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('aWrap').innerHTML = html;
+
+  let present = 0, total = 0;
+  emps.forEach(e => {
+    const att = DB.attendance[e.id];
+    if (att) { total++; present += num(att.worked); }
+  });
+  document.getElementById('aStats').innerHTML = `
+    <div class="card"><div class="l">Workers</div><div class="v">${emps.length}</div></div>
+    <div class="card"><div class="l">Avg Worked</div><div class="v">${total ? (present/total).toFixed(1) : 0}</div></div>`;
+}
+
+function toggleDay(empId, day) {
+  if (!DB.attendance[empId]) {
+    const emp = DB.employees.find(e => e.id == empId);
+    DB.attendance[empId] = {name: emp ? emp.name : '', code: '', days: {}, worked: 0, leave: 0, lop: 0};
+  }
+  const days = DB.attendance[empId].days;
+  const key = String(day);
+  days[key] = cycleDay(days[key] || '');
+  recalcAtt(empId);
+  save();
+  renderAtt();
+}
+
+function recalcAtt(empId) {
+  const att = DB.attendance[empId];
+  if (!att) return;
+  let worked = 0, leave = 0, lop = 0;
+  const md = DB.monthDays || 31;
+  for (let d = 1; d <= md; d++) {
+    const v = att.days[String(d)];
+    if (v === 1 || v === '1' || v === 'P') worked += 1;
+    else if (v === 0.5 || v === '0.5') worked += 0.5;
+    else if (v === 'L') leave += 1;
+    else if (v === -1 || v === '-1') lop += 1;
+  }
+  att.worked = worked;
+  att.leave = leave;
+  att.lop = lop;
+}
+
+function openAttDetail(empId) {
+  const emp = DB.employees.find(e => e.id == empId);
+  if (!emp) return;
+  if (!DB.attendance[empId]) DB.attendance[empId] = {name: emp.name, code: emp.dept, days: {}, worked: 0, leave: 0, lop: 0};
+  document.getElementById('attEmpId').value = empId;
+  document.getElementById('attModalTitle').textContent = emp.name + ' – Attendance';
+  const att = DB.attendance[empId];
+  const md = DB.monthDays || 31;
+  let grid = '';
+  for (let d = 1; d <= md; d++) {
+    const v = att.days[String(d)] || '';
+    grid += `<div><div class="dh">${d}</div><div class="day-cell ${dayClass(v)}" style="padding:8px" onclick="toggleDayModal(${d})" id="md${d}">${v === '' ? '·' : v}</div></div>`;
+  }
+  document.getElementById('attGrid').innerHTML = grid;
+  updateAttDetailStats();
+  document.getElementById('attModal').classList.add('show');
+}
+
+function toggleDayModal(day) {
+  const empId = document.getElementById('attEmpId').value;
+  const days = DB.attendance[empId].days;
+  const key = String(day);
+  days[key] = cycleDay(days[key] || '');
+  document.getElementById('md' + day).textContent = days[key] === '' ? '·' : days[key];
+  document.getElementById('md' + day).className = 'day-cell ' + dayClass(days[key]);
+  document.getElementById('md' + day).style.padding = '8px';
+  recalcAtt(empId);
+  updateAttDetailStats();
+}
+
+function updateAttDetailStats() {
+  const empId = document.getElementById('attEmpId').value;
+  const att = DB.attendance[empId];
+  document.getElementById('attDetailStats').innerHTML = `
+    <div class="card"><div class="l">Worked</div><div class="v">${att.worked}</div></div>
+    <div class="card"><div class="l">Leave</div><div class="v">${att.leave}</div></div>
+    <div class="card"><div class="l">LOP</div><div class="v">${att.lop}</div></div>`;
+}
+
+function saveAttDetail() {
+  save(); closeModal('attModal'); renderAtt();
+}
+
+function markAllPresent() {
+  const today = new Date().getDate();
+  const md = DB.monthDays || 31;
+  if (today > md) { alert('Today exceeds month days'); return; }
+  DB.employees.filter(e => e.active !== false).forEach(e => {
+    if (!DB.attendance[e.id]) DB.attendance[e.id] = {name: e.name, code: e.dept, days: {}, worked: 0, leave: 0, lop: 0};
+    DB.attendance[e.id].days[String(today)] = '1';
+    recalcAtt(e.id);
+  });
+  save(); renderAtt(); toast('Marked present for day ' + today);
+}
+
+function calcSalary(emp) {
+  const att = DB.attendance[emp.id] || {worked: 0, leave: 0, lop: 0};
+  const md = DB.monthDays || 30;
+  const wageMo = num(emp.wageMonth) || (num(emp.wageDay) * md);
+  const wageDay = num(emp.wageDay) || (wageMo / md);
+  const worked = num(att.worked);
+  const lop = num(att.lop);
+  const paidDays = Math.min(md, worked + num(att.leave));
+  const gross = wageMo;
+  const basic = Math.round(wageDay * paidDays * 100) / 100;
+  const pf = emp.epf === 'Y' ? Math.round(basic * 0.12 * 100) / 100 : 0;
+  const esi = emp.esi === 'Y' ? Math.round(basic * 0.0075 * 100) / 100 : 0;
+  const advRec = (DB.advances || []).find(a => a.name === emp.name);
+  const advance = advRec ? num(advRec.totalAdv) : 0;
+  const food = 0, otAmt = 0, incentive = 0;
+  const net = Math.round((basic + otAmt + incentive - pf - esi - advance - food) * 100) / 100;
+  return {gross, worked, lop, paidDays, basic, hra: 0, otAmt, incentive, pf, esi, advance, food, net};
+}
+
+function renderSal() {
+  const q = (document.getElementById('sQ').value || '').toLowerCase();
+  let emps = DB.employees.filter(e => e.active !== false);
+  if (q) emps = emps.filter(e => e.name.toLowerCase().includes(q));
+  let totalNet = 0, totalGross = 0;
+  document.getElementById('sBody').innerHTML = emps.map((e, i) => {
+    let w = (DB.wages || []).find(x => x.name === e.name || String(x.empNo) === String(e.id));
+    if (!w) w = calcSalary(e);
+    totalNet += num(w.net);
+    totalGross += num(w.gross || w.basic);
+    return `<tr>
+      <td>${i+1}</td><td><b>${e.name}</b></td><td>${fmt(w.gross)}</td>
+      <td>${fmt(w.worked)}</td><td>${fmt(w.lop)}</td><td>${fmt(w.paidDays)}</td>
+      <td>${fmt(w.basic)}</td><td>${fmt(w.otAmt)}</td><td>${fmt(w.incentive)}</td>
+      <td>${fmt(w.pf)}</td><td>${fmt(w.esi)}</td><td>${fmt(w.advance)}</td>
+      <td>${fmt(w.food)}</td><td><b>${fmt(w.net)}</b></td>
+      <td><button class="btn btn-sm btn-p" onclick="openAttDetail('${e.id}')">Att</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('sStats').innerHTML = `
+    <div class="card"><div class="l">Workers</div><div class="v">${emps.length}</div></div>
+    <div class="card"><div class="l">Total Gross</div><div class="v">₹${totalGross.toLocaleString('en-IN')}</div></div>
+    <div class="card"><div class="l">Total Net</div><div class="v">₹${totalNet.toLocaleString('en-IN')}</div></div>`;
+}
+
+function calcAllSalary() {
+  DB.wages = DB.employees.filter(e => e.active !== false).map(e => {
+    const s = calcSalary(e);
+    return {empNo: e.id, name: e.name, ...s};
+  });
+  save(); renderSal(); toast('Salaries recalculated');
+}
+
+function renderAdv() {
+  const q = (document.getElementById('vQ').value || '').toLowerCase();
+  let list = DB.advances || [];
+  if (q) list = list.filter(a => a.name.toLowerCase().includes(q));
+  let total = 0;
+  document.getElementById('vBody').innerHTML = list.map((a, i) => {
+    const idx = DB.advances.indexOf(a);
+    total += num(a.totalAdv);
+    return `<tr>
+      <td>${a.code||''}</td><td><b>${a.name}</b></td><td>${fmt(a.advance)}</td>
+      <td>${fmt(a.fine)}</td><td>${fmt(a.totalAdv)}</td><td>${fmt(a.reimb)}</td>
+      <td>${fmt(a.balance)}</td><td>${fmt(a.opening)}</td>
+      <td>
+        <button class="btn btn-sm btn-p" onclick="openAdvForm(${idx})">Edit</button>
+        <button class="btn btn-sm btn-a" onclick="delAdv(${idx})">Del</button>
+      </td></tr>`;
+  }).join('') || '<tr><td colspan="9" class="empty">No advances</td></tr>';
+  document.getElementById('vStats').innerHTML = `
+    <div class="card"><div class="l">Records</div><div class="v">${list.length}</div></div>
+    <div class="card"><div class="l">Total Advance</div><div class="v">₹${total.toLocaleString('en-IN')}</div></div>`;
+}
+
+function openAdvForm(idx) {
+  document.getElementById('advEditIdx').value = idx !== undefined ? idx : '';
+  const sel = document.getElementById('fAdvName');
+  sel.innerHTML = DB.employees.filter(e => e.active !== false).map(e =>
+    `<option value="${e.name}">${e.name}</option>`).join('');
+  if (idx !== undefined) {
+    const a = DB.advances[idx];
+    sel.value = a.name;
+    document.getElementById('fAdvAmt').value = a.advance || '';
+    document.getElementById('fAdvFine').value = a.fine || '';
+    document.getElementById('fAdvReimb').value = a.reimb || '';
+    document.getElementById('fAdvOpen').value = a.opening || '';
+  } else {
+    document.getElementById('fAdvAmt').value = '';
+    document.getElementById('fAdvFine').value = '';
+    document.getElementById('fAdvReimb').value = '';
+    document.getElementById('fAdvOpen').value = '';
+  }
+  document.getElementById('advModal').classList.add('show');
+}
+
+function saveAdv() {
+  const name = document.getElementById('fAdvName').value;
+  const advance = num(document.getElementById('fAdvAmt').value);
+  const fine = num(document.getElementById('fAdvFine').value);
+  const reimb = num(document.getElementById('fAdvReimb').value);
+  const opening = num(document.getElementById('fAdvOpen').value);
+  const totalAdv = advance + fine;
+  const balance = totalAdv - reimb;
+  const rec = {code: '', name, advance, fine, totalAdv, reimb, balance, opening};
+  const idx = document.getElementById('advEditIdx').value;
+  if (idx !== '') DB.advances[idx] = {...DB.advances[idx], ...rec};
+  else DB.advances.push(rec);
+  save(); closeModal('advModal'); renderAdv();
+}
+
+function delAdv(idx) {
+  if (!confirm('Delete advance for ' + DB.advances[idx].name + '?')) return;
+  DB.advances.splice(idx, 1);
+  save(); renderAdv();
+}
+
+function loadSettings() {
+  document.getElementById('setCo').value = DB.company || '';
+  document.getElementById('setLoc').value = DB.location || '';
+  document.getElementById('setMon').value = DB.month || '';
+  document.getElementById('setDays').value = DB.monthDays || 31;
+}
+function saveSettings() {
+  DB.company = document.getElementById('setCo').value;
+  DB.location = document.getElementById('setLoc').value;
+  DB.month = document.getElementById('setMon').value;
+  DB.monthDays = parseInt(document.getElementById('setDays').value) || 31;
+  document.getElementById('coName').textContent = DB.company;
+  document.getElementById('coSub').textContent = DB.location + ' | ' + DB.month;
+  save(); toast('Settings saved');
+}
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(DB, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'emf_payroll_backup.json';
+  a.click();
+}
+function importJSON(ev) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      DB = JSON.parse(e.target.result);
+      save();
+      toast('Imported successfully');
+      renderEmp();
+    } catch(err) { alert('Invalid JSON file'); }
+  };
+  reader.readAsText(file);
+}
+function resetData() {
+  DB = JSON.parse(JSON.stringify(SEED));
+  save();
+  toast('Reset to Excel data');
+  renderEmp();
+}
+function exportCSV(type) {
+  let rows = [];
+  if (type === 'emp') {
+    rows = [['S.No','ID','Name','Dept','WageDay','WageMonth','Gender','DOJ','Mobile','Bank','AccNo']];
+    DB.employees.filter(e => e.active !== false).forEach((e,i) => {
+      rows.push([e.sno||i+1, e.id, e.name, e.dept, e.wageDay, e.wageMonth, e.gender, e.doj, e.mobile, e.bank, e.accNo]);
+    });
+  } else if (type === 'sal') {
+    rows = [['Name','Gross','Worked','LOP','PaidDays','Basic','OT','Incentive','PF','ESI','Advance','Food','Net']];
+    DB.employees.filter(e => e.active !== false).forEach(e => {
+      let w = (DB.wages||[]).find(x => x.name === e.name) || calcSalary(e);
+      rows.push([e.name, w.gross, w.worked, w.lop, w.paidDays, w.basic, w.otAmt, w.incentive, w.pf, w.esi, w.advance, w.food, w.net]);
+    });
+  }
+  const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\n');
+  const blob = new Blob([csv], {type: 'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = type + '_export.csv';
+  a.click();
+}
+
+function sortBy(tab, key) {
+  sortState[key] = !sortState[key];
+  const asc = sortState[key];
+  DB.employees.sort((a, b) => {
+    let va = a[key], vb = b[key];
+    if (typeof va === 'number' && typeof vb === 'number') return asc ? va - vb : vb - va;
+    va = String(va||'').toLowerCase(); vb = String(vb||'').toLowerCase();
+    return asc ? (va < vb ? -1 : 1) : (va > vb ? -1 : 1);
+  });
+  renderEmp();
+}
+
+load();
+renderEmp();
+</script>
+</body>
+</html>
